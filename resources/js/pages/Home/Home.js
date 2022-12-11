@@ -1,6 +1,6 @@
 import './home.css';
 import serviceForHome from '../../Services/serviceForHome';
-import { Button } from 'reactstrap';
+import { Button } from 'react-bootstrap';
 import Image from "../../../assets";
 import defaultBookCover from '../../../assets/bookcover/defaultbook.png';
 import {Link} from 'react-router-dom';
@@ -10,9 +10,6 @@ import { Navigation, Autoplay } from 'swiper';
 import { useNavigate } from "react-router-dom";
 import 'swiper/css/navigation';
 import 'swiper/css';
-
-import axios from 'axios';
-
 
 const Home = () => {
   const Navigate = useNavigate();
@@ -44,14 +41,14 @@ const Home = () => {
 
     return (
       <section className="home-page flex-grow-1">
-        <div className="container">
+        <div className="container" style={{marginBottom: '200px'}}>
           <div className="row align-items-center mb-4">
             <div className="col-lg-6">
               <p>On Sale</p>
             </div>
             <div className="col-lg-6 d-flex justify-content-end">
-              <Button color="secondary" size="sm">
-                <Link to="/shop">
+              <Button variant="secondary" size="sm">
+                <Link to="/shop" style={{color: 'white', textDecoration: 'none'}}>
                 View All &nbsp; <i className="fas fa-angle-right"></i>
                 </Link>
               </Button>
@@ -74,7 +71,7 @@ const Home = () => {
                   <div className="card h-100" onClick={()=>{Navigate(`/shop/${book.id}`)}}>
                     <img
                       className="card-img-top img-fluid"
-                      src={book.book_cover_photo ? Image[book.book_cover_photo]:Image[bookDefault]}
+                      src={book.book_cover_photo ? Image[book.book_cover_photo]:Image['defaultBook']}
                       alt="Books"
                     />
                     <div className="card-body d-flex flex-column">
@@ -94,13 +91,13 @@ const Home = () => {
               <p className="section-title font-20px mb-3">Featured Books</p>
               <div className="mb-4">
                 <Button
-                  color={recommended ? 'secondary' : 'link'}
+                  variant={recommended ? 'secondary' : 'light'}
                   onClick={recommendedBookClick}>
                   Recommended
                 </Button>
 
                 <Button
-                  color={recommended ? 'link' : 'secondary'}
+                  variant={recommended ? 'light' : 'secondary'}
                   onClick={popularBookClick}>
                   Popular
                 </Button>
@@ -116,7 +113,7 @@ const Home = () => {
                     <div className="card h-100">
                       <img
                         className="card-img-top img-fluid"
-                        src={book.book_cover_photo ? Image[book.book_cover_photo]:Image[bookDefault]}
+                        src={book.book_cover_photo ? Image[book.book_cover_photo]:Image['defaultBook']}
                         alt="Books"
                       />
                       <div className="card-body d-flex flex-column">

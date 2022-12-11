@@ -19,7 +19,10 @@ class CreateUsersTable extends Migration
             $table->string('last_name', 50);
             $table->string('email',70)->unique();
             $table->string('password');
-            $table->boolean('admin')->default(false);
+            $table->string('address');
+            $table->string('phone')->default('0902340000');
+            $table->unsignedTinyInteger('role')->default(1);
+            $table->boolean('status')->default(true);
         });
     }
 

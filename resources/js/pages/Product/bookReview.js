@@ -67,11 +67,20 @@ function BookReview({ id }) {
     };
 
     const handleRatingChange = (rating) => {
+        if(rating<6)
         setFilterParams({
             ...filterParams,
             rating: rating,
             page: 1
         });
+        else {
+            delete filterParams['rating'];
+        setFilterParams({
+            ...filterParams,
+            
+        });
+        }
+        console.log(filterParams);
     };
 
     const convertDate = (dateTypeTimestamp) => {
@@ -154,7 +163,7 @@ function BookReview({ id }) {
                                     <Row className="reviews__statistics">
                                         <Col xs={12} md={2} lg={1}>
                                             <h3>{(rating.avg*1.0).toFixed(1)}</h3>
-                                            <span className='reviews__statistics__filtertext' onClick={() => handleRatingChange(null)}>({rating.total})</span>
+                                            <span className='reviews__statistics__filtertext' onClick={() => handleRatingChange(6)}>({rating.total})</span>
                                         </Col>
                                         <Col xs={12} md={10} lg={11}>
                                             <h3>Star</h3>
@@ -207,21 +216,22 @@ function BookReview({ id }) {
 
                                     <div className="reviews__pagination">
                                         <ReactPaginate 
-                                            previousLabel={'Previous'}
-                                            nextLabel={'Next'}
-                                            breakLabel={'...'}
                                             pageRangeDisplayed={3}
                                             renderOnZeroPageCount={null}
-                                            pageClassName="page-item"
-                                            pageLinkClassName="page-link"
-                                            previousClassName="page-item"
-                                            previousLinkClassName="page-link"
-                                            nextClassName="page-item"
-                                            nextLinkClassName="page-link"
-                                            breakClassName="page-item"
-                                            breakLinkClassName="page-link"
-                                            containerClassName="pagination"
-                                            activeClassName="active"
+                                            breakLabel="..."
+                                            nextLabel="Next >"
+                                            pageClassName={'page-item'}
+                                            pageLinkClassName={'page-link'}
+                                            previousClassName={'page-item'}
+                                            previousLinkClassName={'page-link'}
+                                            nextClassName={'page-item'}
+                                            nextLinkClassName={'page-link'}
+                                            breakClassName={'page-item'}
+                                            breakLinkClassName={'page-link'}
+                                            containerClassName={'pagination'}
+                                            activeClassName={'active'}        
+                                            previousLabel="< Previous"
+                                            prevPageRel="null"
                                             pageCount={paginate.last_page}
                                             onPageChange={(e) => handlePageClick(e)}
                                             forcePage={paginate.current_page - 1}

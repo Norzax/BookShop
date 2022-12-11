@@ -8,11 +8,6 @@ import ReactPaginate from 'react-paginate';
 import { useNavigate } from "react-router-dom";
 import queryString from 'query-string';
 import { Dropdown } from 'react-bootstrap';
-
-
-
-  
-  
   
 const Shop = () => {
   const Navigate = useNavigate();
@@ -23,6 +18,7 @@ const Shop = () => {
   const [allBooks, setAllBooks] = useState([]);
   const [allAuthors,setAllAuthors] = useState([]);
   const [allCategories,setAllCategories] = useState([]);
+  const [allPublishers, setAllPublishers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);   
   const [showing, setShowing] = useState({});
   const [filter,setFilter] = useState({
@@ -67,7 +63,7 @@ const limit = {
         setTo(to);
         setTotal(total);
     } catch (error) {
-      
+      console.log(error);
     }
       
   }
@@ -78,12 +74,15 @@ useEffect(() => {
       try {
         const resultAuthors = await serviceForShop.getAuthor();
         const resultCategories = await serviceForShop.getCategory();
+        const resultPublishers = await serviceForShop.getPublisher();
         const allAuthors = resultAuthors.data;
         const allCategories = resultCategories.data;
+        const allPublishers = resultPublishers.data;
         setAllCategories(allCategories);
         setAllAuthors(allAuthors);
+        setAllPublishers(allPublishers);
       } catch (error) {
-        
+        console.log(error);
       }
     }
     fetchFilterList();
@@ -93,7 +92,7 @@ const handleshowing = () => {
     let string = "";
     let flag = 0;
     Object.keys(showing).forEach((key) => {
-          if(flag==1)string+="| ";
+          if(flag==1) string+="| ";
           string+=key+":"+showing[key]+"  ";
           flag = 1; 
     });
@@ -179,13 +178,30 @@ const handleFilter = (value,name,key) => {
                   delete showing['rating'];
                 }
                 break;
+          case 4: if(filter.publisher != value){
+                  setFilter({
+                  ...filter,
+                  publisher: value,
+                  page: 1,
+                  });
+                    setShowing({
+                      ...showing,
+                      publisher: name,
+                    });
+                  }
+                  else{
+                    delete filter['publisher'];
+                    setFilter({...filter});
+                    delete showing['publisher'];
+                  }
+                  break;
         default: break;    
       }
     setCurrentPage(1);
 }
   return (
       <section className="shop-page flex-grow-1">
-        <div className="container">
+        <div className="container" style={{marginBottom: '200px'}}>
           <div className="title-page">
             <p>
               Books <span>(Filtered by {handleshowing()})</span>
@@ -201,12 +217,12 @@ const handleFilter = (value,name,key) => {
                 <Accordion>
                   {/*
                         <!-- Category --> */}
-                  <Accordion.Item eventKey="0" c>
+                  <Accordion.Item eventKey="0">
                     <Accordion.Header>Category</Accordion.Header>
                     <Accordion.Body>
                       {allCategories.map((category) =>{
                         return(
-                          <div className={showing['category']== category.category_name ? "filter__body__active":"filter__body"} onClick={() => handleFilter(category.id,category.category_name,1)}>{category.category_name}</div>
+                          <div key={category.id} className={showing['category']== category.category_name ? "filter__body__active":"filter__body"} onClick={() => handleFilter(category.id,category.category_name,1)}>{category.category_name}</div>
                         );
                       })}
                     </Accordion.Body>
@@ -219,15 +235,28 @@ const handleFilter = (value,name,key) => {
                     <Accordion.Body>
                     {allAuthors.map((author) =>{
                         return(
-                          <div className={showing['author']==author.author_name ? "filter__body__active":"filter__body"} onClick={() => handleFilter(author.id,author.author_name,2)}>{author.author_name}</div>
+                          <div key={author.id} className={showing['author']==author.author_name ? "filter__body__active":"filter__body"} onClick={() => handleFilter(author.id,author.author_name,2)}>{author.author_name}</div>
                         );
                       })}
                     </Accordion.Body>
                   </Accordion.Item>
 
-                  {/*
-                        <!-- Rating --> */}
+                   {/*
+                        <!-- Publisher --> */}
                   <Accordion.Item eventKey="2">
+                    <Accordion.Header>Publisher</Accordion.Header>
+                    <Accordion.Body>
+                    {allPublishers.map((publisher) =>{
+                        return(
+                          <div className={showing['publisher']==publisher.publisher_name ? "filter__body__active":"filter__body"} onClick={() => handleFilter(publisher.id,publisher.publisher_name,4)}>{publisher.publisher_name}</div>
+                        );
+                      })}
+                    </Accordion.Body>
+                  </Accordion.Item>
+
+                  {/* 
+                        <!-- Rating --> */}
+                  <Accordion.Item eventKey="3">
                     <Accordion.Header>Rating</Accordion.Header>
                     <Accordion.Body>
                       <div className={showing['rating']==1 ? "filter__body__active":"filter__body"} onClick={() => handleFilter(1,1,3)}>1 Star</div>
@@ -283,7 +312,7 @@ const handleFilter = (value,name,key) => {
                       return (
                       <div className="col-lg-3 col-md-4 col-sm-6 mb-4" style={{height:500}} key={book.id}>
                       
-                        <div className="card"  onClick={()=>{Navigate(`/shop/${book.id}`)}}>
+                        <div className="card" onClick={()=>{Navigate(`/shop/${book.id}`)}}>
                           <img className="card-img-top img-fluid" src={book.book_cover_photo ? Image[book.book_cover_photo]:Image['defaultBook']} alt="Books" />
                             <div className="card-body">
                             <p className="book-title ">{book.book_title}</p>
@@ -308,21 +337,25 @@ const handleFilter = (value,name,key) => {
                       <ReactPaginate
                     
                         breakLabel="..."
-                        nextLabel="Next"
-                        className="pagination"
-                        previousClassName="px-4 py-2"
-                        nextClassName="px-4 py-2"
-                        breakClassName="px-4 py2"
-                        pageClassName="page-item px-4 py-2 cursor-pointer"
-                        activeClassName="bg-secondary"
+                        nextLabel="Next >"
+                        pageClassName={'page-item'}
+                        pageLinkClassName={'page-link'}
+                        previousClassName={'page-item'}
+                        previousLinkClassName={'page-link'}
+                        nextClassName={'page-item'}
+                        nextLinkClassName={'page-link'}
+                        breakClassName={'page-item'}
+                        breakLinkClassName={'page-link'}
+                        containerClassName={'pagination'}
+                        activeClassName={'active'}        
+                        previousLabel="< Previous"
+                        prevPageRel="null"
                         onPageChange={(event) =>{
                             handlepage(event.selected);   
                         }}
-                        pageRangeDisplayed={3}
-                        
+                        pageRangeDisplayed={3}      
                         pageCount={finalPage}
-                        forcePage={parseInt(currentPage)-1}
-                        previousLabel="Previous"
+                        forcePage={parseInt(currentPage)-1}            
                         renderOnZeroPageCount={null}
                       />
                       )}

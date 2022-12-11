@@ -38,7 +38,7 @@ function Cart(){
   const handleAddQuantity = (id) => {
     cart.map((item)=>{
       if(item.id==id){
-          if(item.quantity<8)item.quantity++;
+          if(item.quantity<item.book.quantity)item.quantity++;
           sessionStorage.setItem("item_cart",JSON.stringify(cart));
           
       }
@@ -84,6 +84,7 @@ function Cart(){
         }else{
             let confirm = window.confirm("Are you sure to place order?");
             if(confirm){
+
                 const itemOrder = cart.map((item) => {
                     return {
                         book_id: item.id,
@@ -92,12 +93,13 @@ function Cart(){
                 });
                 const order = async () => {
                     try {
+
                         const response = await serviceForCart.createOrder({itemOrder: itemOrder});
                         sessionStorage.removeItem('item_cart');
                         setCart([]);
                         toast.success("Success", {
                             position: "top-right",
-                            autoClose: 10000,
+                            autoClose: 5000,
                             hideProgressBar: false,
                             closeOnClick: true,
                             pauseOnHover: false,
@@ -106,35 +108,44 @@ function Cart(){
                           });
                           setTimeout(function(){
                             window.location.reload();
-                         }, 10000);
+                         }, 5000);
+                        console.log(response);
                     } catch (error) {
                         if(error.response.status === 422){
+                            console.log(error.response);
                             let listIdBook = [];
                             if(error.response.data.errors.book_id){
                                 error.response.data.errors.book_id.forEach((item) => {
                                     if(item[0].includes('book_id')){
                                         const itemId = item[0].split(".")[1];
-                                        // console.log(itemId);
+                                        // 
                                         listIdBook.push(itemId);
                                     }
                                 });
+
+                            }
+                            else {
+                                        const itemId = error.response.data.errors.split(".")[1];
+                                        listIdBook.push(itemId);
+                                        console.log(itemId);
                             }
                             // console.log(error.response);
                             if(listIdBook){
                                 listIdBook.map((id)=>{
                                      removebook(id);
                                 })
+                                toast.error("error", {
+                                    position: "top-right",
+                                    autoClose: 5000,
+                                    hideProgressBar: false,
+                                    closeOnClick: true,
+                                    pauseOnHover: false,
+                                    draggable: true,
+                                    progress: undefined,
+                                  });
+                            }
                              }
-                             toast.error("Has undefined book in your cart", {
-                                position: "top-right",
-                                autoClose: 10000,
-                                hideProgressBar: false,
-                                closeOnClick: true,
-                                pauseOnHover: false,
-                                draggable: true,
-                                progress: undefined,
-                              });
-                        }
+                             
                     }
                 }
                 order();
@@ -146,7 +157,7 @@ function Cart(){
 
     return(
         <section className="cart-page flex-grow-1">
-    <div className="container">
+    <div className="container" style={{marginBottom: '500px'}}>
       <div className="title-section">
         <p className="title-page font-22px">Your cart: {Object.keys(cart).length > 1 ? Object.keys(cart).length +" items":Object.keys(cart).length +" item"}</p>
       </div>
@@ -185,7 +196,7 @@ function Cart(){
                                 <Row key={index}>
                                     <Col xs={12} md={12} lg={5}>
                                         <div className="cart__booktitle d-flex">
-                                            <img onClick={() => handleClick(item.book)} style={{width:150}} className="cart__image" src={item.book.book_cover_photo ? Image[item.book.book_cover_photo]: Image['bookDefault']} alt="book" />
+                                            <img onClick={() => handleClick(item.book)} style={{width:150}} className="cart__image" src={item.book.book_cover_photo ? Image[item.book.book_cover_photo]: Image['defaultBook']} alt="book" />
                                             <div className='ms-3 d-flex justify-content-center flex-column'>
                                                 <h6>{item.book.book_title}</h6>
                                                 <p>{item.book.book_author_name}</p>
@@ -214,7 +225,7 @@ function Cart(){
                                     <Col xs={12} md={12} lg={2} className="d-flex justify-content-center flex-column">
                                         <h3 className="cart__price__final">${(item.book.final_price * item.quantity).toFixed(2)}</h3>
                                     </Col>
-                                    <hr className="mt-3"/>
+                                    <hr className="mt-3" style = {{width: '95%', align: 'center'}}/>
                                 </Row>
                             );
                         }

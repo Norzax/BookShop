@@ -13,11 +13,11 @@ const Product = () =>{
     const {id} = useParams();
     const [bookDetail, setBookDetail] = useState([]);
     const [quantity, setQuantity] = useState(1);
-    
-    const minMaxQuantity = {
+    const [showAddToCart,setShowAddToCart] = useState(true);    
+    const [minMaxQuantity,setminMaxQuantity] = useState({
         min: 1,
-        max: 8
-    };
+        max: 8,
+    });
     const schema = yup.object().shape({
       review_title: yup.string().required(),
       review_details: yup.string().required(),
@@ -30,6 +30,30 @@ const Product = () =>{
   useEffect(() => {
     const fetchBookDetail = async () => {
       const bookDetail = await serviceForProduct.getBook(id);
+      if(sessionStorage.getItem("item_cart")!=null){
+        let flag = 0;
+        const items = JSON.parse(sessionStorage.getItem("item_cart"));
+        items.map((item)=>{
+            if(item.id==id){
+                setminMaxQuantity({
+                    ...minMaxQuantity,
+                    max: bookDetail['quantity']-item.quantity>1?bookDetail['quantity']-item.quantity:1
+                  });
+                flag=1;
+            }
+        });
+        if(flag==0) setminMaxQuantity({
+            ...minMaxQuantity,
+            max: bookDetail['quantity'],
+          })
+     }
+        else setminMaxQuantity({
+            ...minMaxQuantity,
+            max: bookDetail['quantity'],
+          })
+        
+      if(bookDetail.quantity>0)setShowAddToCart(true);
+      else setShowAddToCart(false);
       setBookDetail(bookDetail);
     }
     fetchBookDetail();
@@ -48,7 +72,7 @@ const Product = () =>{
         items = JSON.parse(sessionStorage.getItem("item_cart"));
         items.map((item)=>{
             if(item.id==id){
-                if(item.quantity+dataCart.quantity<8)item.quantity+=dataCart.quantity;
+                if(item.quantity+dataCart.quantity<=bookDetail['quantity'])item.quantity+=dataCart.quantity;
                 flag=1;
             }
         });
@@ -89,7 +113,7 @@ const Product = () =>{
 }
     return(
         <section className="detail-page flex-grow-1">
-      <div className="container">
+      <div className="container" style={{marginBottom: '200px'}}>
       <div className="title-section">
         <h3>{bookDetail.category_name}</h3>
       </div>
@@ -101,7 +125,7 @@ const Product = () =>{
             <Row className="detail_card">
                 <Col xs={12} md={2} lg={6} className="detail__colitem">
                     <div >
-                        <img className="detail__image__imd" src={bookDetail.book_cover_photo ? Image[bookDetail.book_cover_photo] :Image['bookDefault']}/>
+                        <img className="detail__image__imd" src={bookDetail.book_cover_photo ? Image[bookDetail.book_cover_photo] :Image['defaultBook']} height="450px" width="300px" />
                     </div>
                     <div className="detail__author">
                         <span>By (author) <strong>{bookDetail.author_name}</strong></span>
@@ -148,9 +172,16 @@ const Product = () =>{
                             <button className="detail__card__body__quantity__button" onClick={() => setQuantity(quantity + 1)}>+</button>
                         )}
                     </div>
-                    <div className="detail__card__body__addtocart">
-                        <button onClick={() => handleAddToCart()}>Add to cart</button>
-                    </div>
+                        {showAddToCart ?
+                        (
+                            <div className="detail__card__body__addtocart">
+                            <button onClick={() => handleAddToCart()}>Add to cart</button>
+                            </div>
+                        ) : (
+                            <div className="detail__card__body__addtocart">
+                            <button>Sold Out</button>
+                            </div>
+                        ) }
                 </Card.Body>
             </Card>
           </Col>
